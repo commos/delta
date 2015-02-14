@@ -1,6 +1,6 @@
 # commos.delta
 
-`[org.commos/commos.delta "0.1.1"]` is designed to help communicate changes of compound values.
+`[org.commos/delta "0.1.1"]` is designed to help communicate changes of compound values.
 
 It is compatible with Clojure (v. 1.7.0-alpha5) and ClojureScript.
 
@@ -22,7 +22,7 @@ While `:is` deltas are mostly useful for communicating an initial value, `:in` d
 ;; -> #{43 42}
 ```
 
-Finally, there is are `:ex` deltas:
+Finally, there are `:ex` deltas:
 
 ```clojure
 (add #{42 43} [:ex 43])
