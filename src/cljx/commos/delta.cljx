@@ -81,25 +81,20 @@
   [ks]
   (map (partial prepend-ks ks)))
 
-(defn- results
-  "Transducer for core/reductions with (f) semantics."
-  ([f] (results f (f)))
+(defn- results-skip-init
+  "Transducer for core/reductions with (f) semantics. Doesn't produce
+  init value."
+  ([f] (results-skip-init f (f)))
   ([f init]
    (fn [rf]
-     (let [state (volatile! ::uninitialized)]
+     (let [state (volatile! init)]
        (fn
          ([] (rf))
-         ([result] (rf (cond-> result
-                         (and (= ::uninitialized @state))
-                         (rf init))))
+         ([result] (rf result))
          ([result input]
-          (if (#+clj identical? #+cljs keyword-identical?
-                     ::uninitialized @state)
-            (rf (rf result init)
-                (vreset! state (f init input)))
-            (rf result (vswap! state f input)))))))))
+          (rf result (vswap! state f input))))))))
 
 (def values
   "A stateful transducer that returns a new composite value for each
   delta going in."
-  (results add))
+  (results-skip-init add))
