@@ -12,8 +12,12 @@
   (testing ":in"
     (is (= #{42}
            (add nil [:in 42])))
+    (is (= #{false}
+           (add nil [:in false])))
     (is (= {:foo #{42}}
-           (add nil [:in :foo 42]))))
+           (add nil [:in :foo 42])))
+    (is (= {:foo #{nil}}
+           (add nil [:in [:foo] nil]))))
   (testing ":ex"
     (is (= #{}
            (add #{42} [:ex 42])))

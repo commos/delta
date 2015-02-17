@@ -5,17 +5,21 @@
   [ks]
   (if (coll? ks) ks [ks]))
 
+(defn- add-root-delta
+  [val op new-val]
+  (case op
+    :is new-val
+    :in (into (or val #{}) (collect new-val))
+    :ex (if (map? val)
+          (apply dissoc val (collect new-val))
+          (difference val (collect new-val)))))
+
 (defn add*
-  [val [op korks-or-val new-val :as delta]]
-  (if new-val
-    (update-in val (collect korks-or-val) add* [op new-val])
-    (let [new-val korks-or-val]
-      (case op
-        :is new-val
-        :in (into (or val #{}) (collect new-val))
-        :ex (if (map? val)
-              (apply dissoc val (collect new-val))
-              (difference val (collect new-val)))))))
+  [val [op korks-or-new-val new-val :as delta]]
+  (if (= 3 (count delta))
+    (update-in val (collect korks-or-new-val)
+               add-root-delta op new-val)
+    (add-root-delta val op korks-or-new-val)))
 
 (defn add
   "Reducing function to apply a delta to a streamed compound EDN
@@ -48,7 +52,7 @@
   (->> delta
        unpack
        (map (fn [[op korks-or-new-val new-val :as delta]]
-              (if new-val
+              (if (= 3 (count delta))
                 [op (into ks (collect korks-or-new-val)) new-val]
                 [op ks korks-or-new-val])))
        pack))
@@ -60,10 +64,11 @@
 
   Not suitable for :batch deltas (use unpack) beforehand."
   [[op korks-or-new-val new-val :as delta]]
-  (cond-> (if new-val
+  (cond-> (if (= 3 (count delta))
             [op (collect korks-or-new-val) new-val]
             [op [] korks-or-new-val])
-    (not= :is op) (update-in [2] collect)))
+    (not (#+clj identical? #+cljs keyword-identical? op :is))
+    (update-in [2] collect)))
 
 (defn normalized-delta
   "Bring a delta from diagnostic form into normalized form, applicable
@@ -72,7 +77,6 @@
   (if (seq korks)
     delta
     [op new-val]))
-
 
 ;; Transducers
 (defn nest
