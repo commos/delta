@@ -5,6 +5,7 @@
   [ks]
   (if (coll? ks) ks [ks]))
 
+;; Adding deltas
 (defn- add-root-delta
   [val op new-val]
   (case op
@@ -22,8 +23,7 @@
     (add-root-delta val op korks-or-new-val)))
 
 (defn add
-  "Reducing function to apply a delta to a streamed compound EDN
-  value."
+  "Reducing function to add a delta to a streamed compound EDN value."
   ([] nil)
   ([val] val)
   ([val [op & maybe-deltas :as delta]]
@@ -60,7 +60,7 @@
 (defn diagnostic-delta
   "Bring delta into diagnostic form [op ks (v | [v+])].  v is a
   collection for :in and :ex ops.  This form is not applicable for add
-  as ks can be [], which is invalid.
+  as ks can be [], which is invalid. See summable-delta.
 
   Not suitable for :batch deltas (use unpack) beforehand."
   [[op korks-or-new-val new-val :as delta]]
@@ -70,8 +70,8 @@
     (not (#+clj identical? #+cljs keyword-identical? op :is))
     (update-in [2] collect)))
 
-(defn applicable-delta
-  "Bring a delta from diagnostic form into applicable form."
+(defn summable-delta
+  "Make a diagnostic applicable for add again."
   [[op korks new-val :as delta]]
   (if (seq korks)
     delta
