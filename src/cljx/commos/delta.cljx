@@ -69,7 +69,7 @@
     (mapcat (partial step []) (flatten-keys m))))
 
 (defn negative-deltas
-  "Convert a map to positive summable deltas."
+  "Convert a map to negative summable deltas."
   [m]
   (->> m
        negative-diagnostic-deltas
