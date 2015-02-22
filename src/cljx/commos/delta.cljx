@@ -120,6 +120,8 @@
   (results-skip-init add))
 
 ;; Adding deltas
+(declare add*)
+
 (defn- add-root-delta
   [val op new-val]
   (case op
@@ -127,7 +129,10 @@
     :in (into (or val #{}) (collect new-val))
     :ex (if (map? val)
           (apply dissoc val (collect new-val))
-          (difference val (collect new-val)))))
+          (difference val (collect new-val)))
+
+    :on (reduce add* val (positive-deltas new-val))
+    :off (reduce add* val (negative-deltas new-val))))
 
 (defn- add*
   [val [op korks-or-new-val new-val :as delta]]
