@@ -61,7 +61,7 @@
                  (cond (map? v)
                        (mapcat (partial step full-ks) v)
 
-                       (sequential? v)
+                       (coll? v)
                        [[:ex full-ks v]]
 
                        :else
