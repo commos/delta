@@ -1,35 +1,10 @@
 (ns commos.delta
-  (:require [clojure.set :refer [difference]]))
+  (:require [clojure.set :refer [difference]]
+            [commos.shared.core :refer [flatten-keys]]))
 
 (defn- collect
   [ks]
   (if (coll? ks) ks [ks]))
-
-;; Adding deltas
-(defn- add-root-delta
-  [val op new-val]
-  (case op
-    :is new-val
-    :in (into (or val #{}) (collect new-val))
-    :ex (if (map? val)
-          (apply dissoc val (collect new-val))
-          (difference val (collect new-val)))))
-
-(defn add*
-  [val [op korks-or-new-val new-val :as delta]]
-  (if (= 3 (count delta))
-    (update-in val (collect korks-or-new-val)
-               add-root-delta op new-val)
-    (add-root-delta val op korks-or-new-val)))
-
-(defn add
-  "Reducing function to add a delta to a streamed compound EDN value."
-  ([] nil)
-  ([val] val)
-  ([val [op & maybe-deltas :as delta]]
-   (if (#+clj identical? #+cljs keyword-identical? op :batch)
-     (reduce add* val maybe-deltas)
-     (add* val delta))))
 
 ;; Helpers on deltas
 (defn pack
@@ -60,7 +35,7 @@
 (defn diagnostic-delta
   "Bring delta into diagnostic form [op ks (v | [v+])].  v is a
   collection for :in and :ex ops.  This form is not applicable for add
-  as ks can be [], which is invalid. See summable-delta.
+  as ks can be [], which is invalid.  See summable-delta.
 
   Not suitable for :batch deltas (use unpack) beforehand."
   [[op korks-or-new-val new-val :as delta]]
@@ -76,6 +51,48 @@
   (if (seq korks)
     delta
     [op new-val]))
+
+;; Creating deltas
+(defn negative-diagnostic-deltas
+  "Convert a map to negative diagnostic deltas."
+  [m]
+  (let [step (fn step [root-ks [ks v]]
+               (let [full-ks (into root-ks ks)]
+                 (cond (map? v)
+                       (mapcat (partial step full-ks) v)
+
+                       (sequential? v)
+                       [[:ex full-ks v]]
+
+                       :else
+                       [[:ex (pop full-ks) (peek full-ks)]])))]
+    (mapcat (partial step []) (flatten-keys m))))
+
+(defn negative-deltas
+  "Convert a map to positive summable deltas."
+  [m]
+  (->> m
+       negative-diagnostic-deltas
+       (map summable-delta)))
+
+(defn positive-diagnostic-deltas
+  "Convert a map to positive diagnostic deltas."
+  [m]
+  (let [step (fn step [root-ks [ks v]]
+               (let [full-ks (into root-ks ks)]
+                 (cond (map? v)
+                       (mapcat (partial step full-ks) v)
+
+                       (coll? v)
+                       [[:in full-ks v]]
+
+                       :else
+                       [[:is full-ks v]])))]
+    (mapcat (partial step []) (flatten-keys m))))
+
+(def ^{:arglists '([m])} positive-deltas
+  "Convert a map to positive summable deltas."
+  positive-diagnostic-deltas)
 
 ;; Transducers
 (defn nest
@@ -101,3 +118,29 @@
   "A stateful transducer that returns a new composite value for each
   delta going in."
   (results-skip-init add))
+
+;; Adding deltas
+(defn- add-root-delta
+  [val op new-val]
+  (case op
+    :is new-val
+    :in (into (or val #{}) (collect new-val))
+    :ex (if (map? val)
+          (apply dissoc val (collect new-val))
+          (difference val (collect new-val)))))
+
+(defn add*
+  [val [op korks-or-new-val new-val :as delta]]
+  (if (= 3 (count delta))
+    (update-in val (collect korks-or-new-val)
+               add-root-delta op new-val)
+    (add-root-delta val op korks-or-new-val)))
+
+(defn add
+  "Reducing function to add a delta to a streamed compound EDN value."
+  ([] nil)
+  ([val] val)
+  ([val [op & maybe-deltas :as delta]]
+   (if (#+clj identical? #+cljs keyword-identical? op :batch)
+     (reduce add* val maybe-deltas)
+     (add* val delta))))
