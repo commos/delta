@@ -7,44 +7,6 @@
   (if (coll? ks) ks [ks]))
 
 ;; Helpers on deltas
-(defn pack
-  "Wrap deltas in a :batch delta if necessary."
-  [deltas]
-  (if (> (count deltas) 1)
-    (apply vector :batch deltas)
-    (first deltas)))
-
-(defn unpack
-  "Return a seq of deltas from a delta."
-  [[op & maybe-deltas :as delta]]
-  (if (#+clj identical? #+cljs keyword-identical? op :batch)
-    maybe-deltas
-    [delta]))
-
-(defn prepend-ks
-  "Prepend ks to the keys in delta"
-  [ks delta]
-  (->> delta
-       unpack
-       (map (fn [[op korks-or-new-val new-val :as delta]]
-              (if (= 3 (count delta))
-                [op (into ks (collect korks-or-new-val)) new-val]
-                [op ks korks-or-new-val])))
-       pack))
-
-(defn diagnostic-delta
-  "Bring delta into diagnostic form [op ks (v | [v+])].  v is a
-  collection for :in and :ex ops.  This form is not applicable for add
-  as ks can be [], which is invalid.  See summable-delta.
-
-  Not suitable for :batch deltas (use unpack) beforehand."
-  [[op korks-or-new-val new-val :as delta]]
-  (cond-> (if (= 3 (count delta))
-            [op (collect korks-or-new-val) new-val]
-            [op [] korks-or-new-val])
-    (not (#+clj identical? #+cljs keyword-identical? op :is))
-    (update-in [2] collect)))
-
 (defn summable-delta
   "Make a diagnostic applicable for add again."
   [[op korks new-val :as delta]]
@@ -93,6 +55,67 @@
 (def ^{:arglists '([m])} positive-deltas
   "Convert a map to positive summable deltas."
   positive-diagnostic-deltas)
+
+;; Helpers on deltas
+(defn diagnostic-delta
+  "Bring delta into diagnostic form [op ks (v | [v+])].  v is a
+  collection for :in and :ex ops.  This form is not applicable for add
+  as ks can be [], which is invalid.  See summable-delta.
+
+  Not suitable for :batch - use unpack."
+  [[op korks-or-new-val new-val :as delta]]
+  (cond-> (if (= 3 (count delta))
+            [op (collect korks-or-new-val) new-val]
+            [op [] korks-or-new-val])
+    (not (#+clj identical? #+cljs keyword-identical? op :is))
+    (update-in [2] collect)))
+
+(defn- prepend-ks*
+  [ks [op korks-or-new-val new-val :as delta]]
+  (if (= 3 (count delta))
+    [op (into ks (collect korks-or-new-val)) new-val]
+    [op ks korks-or-new-val]))
+
+(defn pack
+  "Wrap deltas in a :batch delta if necessary."
+  [deltas]
+  (if (> (count deltas) 1)
+    (apply vector :batch deltas)
+    (first deltas)))
+
+(defn- unpack-batch
+  [[op & maybe-deltas :as delta]]
+  (if (#+clj identical? #+cljs keyword-identical? op :batch)
+    maybe-deltas
+    [delta]))
+
+(defn unpack
+  "Return a seq of deltas from a delta.  Returns a seq with
+  only :is, :in and :ex deltas."
+  [delta]
+  (let [transform (fn [delta f]
+                    (let [[_ ks v] (diagnostic-delta delta)]
+                      (->> v
+                           f
+                           (map (partial prepend-ks* ks))
+                           (map summable-delta))))]
+    (->> delta
+         unpack-batch
+         (mapcat (fn [[op :as delta]]
+                   (case op
+                     :on (transform delta
+                                    positive-diagnostic-deltas)
+                     :off (transform delta
+                                     negative-diagnostic-deltas)
+                     [delta]))))))
+
+(defn prepend-ks
+  "Prepend ks to the keys in delta"
+  [ks delta]
+  (->> delta
+       unpack
+       (map (partial prepend-ks* ks))
+       pack))
 
 ;; Transducers
 (defn nest
