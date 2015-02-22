@@ -129,7 +129,7 @@
           (apply dissoc val (collect new-val))
           (difference val (collect new-val)))))
 
-(defn add*
+(defn- add*
   [val [op korks-or-new-val new-val :as delta]]
   (if (= 3 (count delta))
     (update-in val (collect korks-or-new-val)
