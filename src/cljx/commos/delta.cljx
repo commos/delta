@@ -117,31 +117,6 @@
        (map (partial prepend-ks* ks))
        pack))
 
-;; Transducers
-(defn nest
-  "Returns a transducer that transforms deltas so that their paths
-  begin with ks."
-  [ks]
-  (map (partial prepend-ks ks)))
-
-(defn- results-skip-init
-  "Transducer for core/reductions with (f) semantics. Doesn't produce
-  init value."
-  ([f] (results-skip-init f (f)))
-  ([f init]
-   (fn [rf]
-     (let [state (volatile! init)]
-       (fn
-         ([] (rf))
-         ([result] (rf result))
-         ([result input]
-          (rf result (vswap! state f input))))))))
-
-(def values
-  "A stateful transducer that returns a new composite value for each
-  delta going in."
-  (results-skip-init add))
-
 ;; Adding deltas
 (declare add*)
 
@@ -172,3 +147,28 @@
    (if (#+clj identical? #+cljs keyword-identical? op :batch)
      (reduce add* val maybe-deltas)
      (add* val delta))))
+
+;; Transducers
+(defn nest
+  "Returns a transducer that transforms deltas so that their paths
+  begin with ks."
+  [ks]
+  (map (partial prepend-ks ks)))
+
+(defn- results-skip-init
+  "Transducer for core/reductions with (f) semantics. Doesn't produce
+  init value."
+  ([f] (results-skip-init f (f)))
+  ([f init]
+   (fn [rf]
+     (let [state (volatile! init)]
+       (fn
+         ([] (rf))
+         ([result] (rf result))
+         ([result input]
+          (rf result (vswap! state f input))))))))
+
+(def values
+  "A stateful transducer that returns a new composite value for each
+  delta going in."
+  (results-skip-init add))
