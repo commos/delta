@@ -70,9 +70,8 @@
     (not (#+clj identical? #+cljs keyword-identical? op :is))
     (update-in [2] collect)))
 
-(defn normalized-delta
-  "Bring a delta from diagnostic form into normalized form, applicable
-  for add."
+(defn applicable-delta
+  "Bring a delta from diagnostic form into applicable form."
   [[op korks new-val :as delta]]
   (if (seq korks)
     delta
