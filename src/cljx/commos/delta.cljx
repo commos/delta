@@ -10,9 +10,11 @@
 (defn summable-delta
   "Make a diagnostic applicable for add again."
   [[op korks new-val :as delta]]
-  (if (seq korks)
-    delta
-    [op new-val]))
+  (let [new-val (cond-> new-val
+                  (= :is op) peek)]
+    (if (seq korks)
+      (assoc delta 2 new-val)
+      [op new-val])))
 
 ;; Creating deltas
 (defn negative-diagnostic-deltas
@@ -49,26 +51,32 @@
                        [[:in full-ks v]]
 
                        :else
-                       [[:is full-ks v]])))]
+                       [[:is full-ks [v]]])))]
     (mapcat (partial step []) (flatten-keys m))))
 
-(def ^{:arglists '([m])} positive-deltas
+(defn positive-deltas
   "Convert a map to positive summable deltas."
-  positive-diagnostic-deltas)
+  [m]
+  (->> m
+       positive-diagnostic-deltas
+       (map summable-delta)))
 
 ;; Helpers on deltas
 (defn diagnostic-delta
-  "Bring delta into diagnostic form [op ks (v | [v+])].  v is a
-  collection for :in and :ex ops.  This form is not applicable for add
-  as ks can be [], which is invalid.  See summable-delta.
+  "Bring delta into diagnostic form [op ks vs].  For convenience, vs
+  is a collection for any op.
+
+  This form is not applicable for add.  See summable-delta.
 
   Not suitable for :batch - use unpack."
   [[op korks-or-new-val new-val :as delta]]
-  (cond-> (if (= 3 (count delta))
-            [op (collect korks-or-new-val) new-val]
-            [op [] korks-or-new-val])
-    (not (#+clj identical? #+cljs keyword-identical? op :is))
-    (update-in [2] collect)))
+  (-> (if (= 3 (count delta))
+        [op (collect korks-or-new-val) new-val]
+        [op [] korks-or-new-val])
+      (update-in [2]
+                 (if (#+clj identical? #+cljs keyword-identical? op :is)
+                   vector
+                   collect))))
 
 (defn- prepend-ks*
   [ks [op korks-or-new-val new-val :as delta]]
