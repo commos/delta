@@ -27,7 +27,23 @@
            (add {:foo 42} [:ex :foo])))
     (is (= {:foo {:baz :quux}}
            (add {:foo {:bar 42
-                       :baz :quux}} [:ex [:foo] :bar])))))
+                       :baz :quux}} [:ex [:foo] :bar]))))
+  (testing ":on"
+    (is (= {:foo {:bar 42}}
+           (add nil [:on {:foo {:bar 42}}])))
+    (is (= {:foo {:bar #{42}}}
+           (add nil [:on {:foo {:bar [42]}}])))
+    (is (= {:foo {:bar #{42 43}
+                  :baz :quux}}
+           (add {:foo {:bar #{42}
+                       :baz :quux}}
+                [:on {:foo {:bar #{43}}}]))))
+  (testing ":off"
+    (is (= {:foo {:bar #{42}}}
+           (add {:foo {:bar #{42 43}
+                       :baz :quux}}
+                [:off {:foo {:bar #{43}
+                             :baz :quux}}])))))
 
 (deftest test-nest
   (is (= {:foo 42} (transduce (nest [:foo]) add [[:is 42]])))
