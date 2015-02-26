@@ -1,6 +1,6 @@
 # commos.delta
 
-`[org.commos/delta "0.2.1"]` is designed to help communicate changes of compound values.
+`[org.commos/delta "0.2.2"]` is designed to help communicate changes of compound values.
 
 It is compatible with Clojure (v. 1.7.0-alpha5) and ClojureScript.
 
