@@ -1,4 +1,4 @@
-(defproject org.commos/delta "0.2.2"
+(defproject org.commos/delta "0.2.3"
   :description "Communicate changes of compound values"
   :url "http://github.com/commos/delta"
   :license {:name "Eclipse Public License"

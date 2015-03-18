@@ -4,7 +4,9 @@
 
 (defn- collect
   [ks]
-  (if (coll? ks) ks [ks]))
+  (if (coll? ks)
+    ks
+    [ks]))
 
 ;; Helpers on deltas
 (defn summable-delta
@@ -93,9 +95,10 @@
 
 (defn- unpack-batch
   [[op & maybe-deltas :as delta]]
-  (if (#+clj identical? #+cljs keyword-identical? op :batch)
-    maybe-deltas
-    [delta]))
+  (cond (#+clj identical? #+cljs keyword-identical? op :batch)
+        maybe-deltas
+        delta
+        [delta]))
 
 (defn unpack
   "Return a seq of deltas from a delta.  Returns a seq with
