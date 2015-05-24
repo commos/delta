@@ -1,8 +1,8 @@
 # commos.delta
 
-`[org.commos/delta "0.2.3"]` is designed to help communicate changes of compound values.
+`[org.commos/delta "0.2.4"]` is designed to help communicate changes of compound values.
 
-It is compatible with Clojure (v. 1.7.0-alpha5) and ClojureScript.
+It is compatible with Clojure (v. 1.7.0-RC1) and ClojureScript.
 
 ## Usage
 The `add` function is used to apply a delta to any supported value. Supported values are maps, sets, and all elements that are not collections.
@@ -55,7 +55,7 @@ Sequential colls (lists, vectors) are not supported for manipulation via `:in` a
 
 ### Clojure
 
-Run `lein cleantest`.
+Due to Leiningens test task not supporting cljc yet, please run tests from the REPL.
 
 ### ClojureScript
 

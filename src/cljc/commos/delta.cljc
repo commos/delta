@@ -76,7 +76,7 @@
         [op (collect korks-or-new-val) new-val]
         [op [] korks-or-new-val])
       (update-in [2]
-                 (if (#+clj identical? #+cljs keyword-identical? op :is)
+                 (if (#?(:clj identical? :cljs keyword-identical?) op :is)
                    vector
                    collect))))
 
@@ -95,7 +95,7 @@
 
 (defn- unpack-batch
   [[op & maybe-deltas :as delta]]
-  (cond (#+clj identical? #+cljs keyword-identical? op :batch)
+  (cond (#?(:clj identical? :cljs keyword-identical?) op :batch)
         maybe-deltas
         delta
         [delta]))
@@ -155,7 +155,7 @@
   ([] nil)
   ([val] val)
   ([val [op & maybe-deltas :as delta]]
-   (if (#+clj identical? #+cljs keyword-identical? op :batch)
+   (if (#?(:clj identical? :cljs keyword-identical?) op :batch)
      (reduce add* val maybe-deltas)
      (add* val delta))))
 
