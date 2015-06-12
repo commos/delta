@@ -64,20 +64,26 @@
        positive-diagnostic-deltas
        (map summable-delta)))
 
+(defn diagnostic-difference
+  "Like difference, but returns diagnostic deltas."
+  [x y]
+  (cond (and (map x) (map? y))
+        (let [[neg pos _] (data/diff x y)]
+          (concat (negative-diagnostic-deltas neg)
+                  (positive-diagnostic-deltas pos)))
+
+        (and (set? x) (set? y))
+        [[:in [] (difference y x)]]
+        
+        :else
+        [[:is [] [y]]]))
+
 (defn difference
   "Returns difference between x and y in deltas.  Adding the returned
   deltas to x gives y."
   [x y]
-  (cond (and (map x) (map? y))
-        (let [[neg pos _] (data/diff x y)]
-          (concat (negative-deltas neg)
-                  (positive-deltas pos)))
-
-        (and (set? x) (set? y))
-        [[:in (difference y x)]]
-        
-        :else
-        [[:is y]]))
+  (->> (diagnostic-difference x y)
+       (map summable-delta)))
 
 ;; Helpers on deltas
 (defn diagnostic-delta
