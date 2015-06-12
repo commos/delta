@@ -150,6 +150,30 @@
        (map (partial prepend-ks* ks))
        pack))
 
+(defn diagnostic-implied-difference
+  "Returns the implied difference of delta as diagnostic deltas so
+  that no replacements or dissociations are asserted."
+  [val delta]
+  (let [[op ks v :as dd] (diagnostic-delta delta)
+        cur-v (get-in val ks)]
+    (case op
+      :is
+      (->> (diagnostic-difference cur-v (first v))
+           (map (partial prepend-ks* ks)))
+      :ex
+      (if (map? cur-v)
+        (->> (diagnostic-difference cur-v
+                                    (apply dissoc cur-v v))
+             (map (partial prepend-ks* ks)))
+        [dd])
+      [dd])))
+
+;; Don't see use for this...
+;; (defn implied-difference
+;;   [val delta]
+;;   (->> (diagnostic-implied-difference val delta)
+;;        (map summable-delta)))
+
 ;; Adding deltas
 (declare add*)
 
