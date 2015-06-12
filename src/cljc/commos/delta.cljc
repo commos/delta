@@ -32,7 +32,7 @@
                        [[:ex full-ks v]]
 
                        :else
-                       [[:ex (pop full-ks) (peek full-ks)]])))]
+                       [[:ex (pop full-ks) [(peek full-ks)]]])))]
     (mapcat (partial step []) (flatten-keys m))))
 
 (defn negative-deltas
