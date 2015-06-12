@@ -1,5 +1,6 @@
 (ns commos.delta
-  (:require [clojure.set :refer [difference]]
+  (:require [clojure.set :as set]
+            [clojure.data :as data]
             [commos.shared.core :refer [flatten-keys]]))
 
 (defn- collect
@@ -62,6 +63,21 @@
   (->> m
        positive-diagnostic-deltas
        (map summable-delta)))
+
+(defn difference
+  "Returns difference between x and y in deltas.  Adding the returned
+  deltas to x gives y."
+  [x y]
+  (cond (and (map x) (map? y))
+        (let [[neg pos _] (data/diff x y)]
+          (concat (negative-deltas neg)
+                  (positive-deltas pos)))
+
+        (and (set? x) (set? y))
+        [[:in (difference y x)]]
+        
+        :else
+        [[:is y]]))
 
 ;; Helpers on deltas
 (defn diagnostic-delta
@@ -138,7 +154,7 @@
     :in (into (or val #{}) (collect new-val))
     :ex (if (map? val)
           (apply dissoc val (collect new-val))
-          (difference val (collect new-val)))
+          (set/difference val (collect new-val)))
 
     :on (reduce add* val (positive-deltas new-val))
     :off (reduce add* val (negative-deltas new-val))))
