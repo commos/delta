@@ -165,11 +165,25 @@
     :on (reduce add* val (positive-deltas new-val))
     :off (reduce add* val (negative-deltas new-val))))
 
+(defn- update-in'
+  "Like update-in but auto dissocs the val at ks if it is an empty set
+  or map, or nil."
+  [m [k & ks] f & args]
+  (let [r (if ks
+            (apply cleaning-update-in (get m k) ks f args)
+            (apply f (get m k) args))]
+    (if (or (nil? r)
+            (and (or (map? r)
+                     (set? r))
+                 (empty? r)))
+      (dissoc m k)
+      (assoc m k r))))
+
 (defn- add*
   [val [op korks-or-new-val new-val :as delta]]
   (if (= 3 (count delta))
-    (update-in val (collect korks-or-new-val)
-               add-root-delta op new-val)
+    (update-in' val (collect korks-or-new-val)
+                add-root-delta op new-val)
     (add-root-delta val op korks-or-new-val)))
 
 (defn add

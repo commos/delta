@@ -21,7 +21,7 @@
   (testing ":ex"
     (is (= #{}
            (add #{42} [:ex 42])))
-    (is (= {:foo #{}}
+    (is (= {}
            (add {:foo #{42}} [:ex :foo 42])))
     (is (= {}
            (add {:foo 42} [:ex :foo])))
