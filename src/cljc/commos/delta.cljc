@@ -82,10 +82,10 @@
         :else
         [[:is [] [y]]]))
 
-(defn implied-difference
-  "Returns the implied difference in deltas so that no :is
-  replacements of maps or sets, or :ex dissociations of maps are
-  asserted."
+(defn implied-deltas
+  "Return deltas implied with (raw) delta so that no :is replacements
+  of whole maps or sets, or :ex dissociations of whole maps are
+  included."
   [val [op ks v :as delta]]
   (let [cur-v (get-in val ks)]
     (case op
