@@ -1,6 +1,5 @@
 (ns commos.delta
   (:require [clojure.set :as set]
-            [clojure.data :as data]
             [commos.shared.core :refer [flatten-keys]]))
 
 (def ^:private kw-identical?
@@ -67,12 +66,52 @@
                        [[:is full-ks v]])))]
     (mapcat (partial step []) (flatten-keys m))))
 
+(defn- diff
+  [a b]
+  (if (= a b)
+    [nil nil]
+    (cond (and (map? a)
+               (map? b))
+          (reduce
+           (fn [[in-a in-b :as acc] k]
+             (let [v-in-a (get a k :sentinel)
+                   v-in-b (get b k :sentinel)]
+               (cond
+                 (kw-identical? v-in-a :sentinel)
+                 (assoc-in acc [1 k] v-in-b)
+
+                 (kw-identical? v-in-b :sentinel)
+                 (assoc-in acc [0 k] v-in-a)
+
+                 (not= v-in-a v-in-b)
+                 (if (or (nil? v-in-a)
+                         (nil? v-in-b))
+                   (-> acc
+                       (assoc-in [0 k] v-in-a)
+                       (assoc-in [1 k] v-in-b))
+
+                   (let [[v-in-a v-in-b] (diff v-in-a v-in-b)]
+                     (cond-> acc
+                       v-in-a (assoc-in [0 k] v-in-a)
+                       v-in-b (assoc-in [1 k] v-in-b))))
+
+                 true
+                 acc)))
+           [nil nil]
+           (eduction (distinct) (concat (keys a) (keys b))))
+          (and (set? a)
+               (set? b))
+          [(not-empty (set/difference a b))
+           (not-empty (set/difference b a))]
+          :else
+          [a b])))
+
 (defn difference
   "Returns difference between x and y in raw deltas.  Adding the
   returned deltas to x gives y."
   [x y]
   (cond (and (map x) (map? y))
-        (let [[neg pos _] (data/diff x y)]
+        (let [[neg pos] (diff x y)]
           (concat (subtractive-deltas neg)
                   (additive-deltas pos)))
 
