@@ -73,27 +73,26 @@
     (cond (and (map? a)
                (map? b))
           (reduce
-           (fn [[in-a in-b :as acc] k]
-             (let [v-in-a (get a k :sentinel)
-                   v-in-b (get b k :sentinel)]
+           (fn [acc k]
+             (let [in-a (get a k :sentinel)
+                   in-b (get b k :sentinel)]
                (cond
-                 (kw-identical? v-in-a :sentinel)
-                 (assoc-in acc [1 k] v-in-b)
+                 (kw-identical? in-a :sentinel)
+                 (assoc-in acc [1 k] in-b)
 
-                 (kw-identical? v-in-b :sentinel)
-                 (assoc-in acc [0 k] v-in-a)
+                 (kw-identical? in-b :sentinel)
+                 (assoc-in acc [0 k] in-a)
 
-                 (not= v-in-a v-in-b)
-                 (if (or (nil? v-in-a)
-                         (nil? v-in-b))
+                 (not= in-a in-b)
+                 (if (or (nil? in-a)
+                         (nil? in-b))
                    (-> acc
-                       (assoc-in [0 k] v-in-a)
-                       (assoc-in [1 k] v-in-b))
-
-                   (let [[v-in-a v-in-b] (diff v-in-a v-in-b)]
+                       (assoc-in [0 k] in-a)
+                       (assoc-in [1 k] in-b))
+                   (let [[in-a in-b] (diff in-a in-b)]
                      (cond-> acc
-                       v-in-a (assoc-in [0 k] v-in-a)
-                       v-in-b (assoc-in [1 k] v-in-b))))
+                       in-a (assoc-in [0 k] in-a)
+                       in-b (assoc-in [1 k] in-b))))
 
                  true
                  acc)))
