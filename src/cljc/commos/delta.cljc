@@ -119,7 +119,7 @@
         [[:in [] (set/difference y x)]]
         
         :else
-        [[:is [] [y]]]))
+        [[:is [] y]]))
 
 (defn implied-deltas
   "Return deltas implied with (raw) delta so that no :is replacements
