@@ -263,7 +263,6 @@
          ([result input]
           (rf result (vswap! state f input))))))))
 
-(def values
-  "A stateful transducer that returns a new composite value for each
-  delta going in."
+(def sums
+  "A transducer that produces a new sum for each input delta."
   (results-skip-init add))
