@@ -36,7 +36,7 @@
        pack))
 
 ;; Creating deltas
-(defn subtractive-deltas
+(defn- subtractive-deltas
   "Convert a map to subtractive raw deltas."
   [m]
   (let [step (fn step [root-ks [ks v]]
@@ -51,7 +51,7 @@
                        [[:ex (pop full-ks) [(peek full-ks)]]])))]
     (mapcat (partial step []) (flatten-keys m))))
 
-(defn additive-deltas
+(defn- additive-deltas
   "Convert a map to additive raw deltas."
   [m]
   (let [step (fn step [root-ks [ks v]]
