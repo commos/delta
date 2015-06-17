@@ -1,9 +1,9 @@
-(defproject org.commos/delta "0.2.4-SNAPSHOT"
+(defproject org.commos/delta "0.3.0-SNAPSHOT"
   :description "Communicate changes of compound values"
   :url "http://github.com/commos/delta"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.7.0-RC1"]
+  :dependencies [[org.clojure/clojure "1.7.0-RC2"]
                  [org.commos/shared "0.1.0"]]
   :source-paths ["src/cljc"]
   :profiles {:dev {:dependencies [[org.clojure/clojurescript "0.0-3269"]]
