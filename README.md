@@ -1,55 +1,30 @@
 # commos.delta
 
-`[org.commos/delta "0.2.4"]` is designed to help communicate changes of compound values.
+`[org.commos/delta "0.3.0"]` provides opinionated facilities for creating, analyzing and applying directed deltas to nested EDN data structures.
 
-It is compatible with Clojure (v. 1.7.0-RC1) and ClojureScript.
+The commos.delta format is designed for exchanging EDN data between services.  Design goals for its deltas are
+
+- Analyzable
+
+  Validation code or change listeners are standard usecases.  If you want to listen to changes to a streamed data structure, you don't want to diff unless you have to.
+
+- Transformable
+
+  This allows, e. g. for services mixing delta streams from multiple services into one delta stream.  See delta.compscribe.
+
+- Only maps and sets
+
+  Deltas can only assert full replacements of vectors, lists or sequential types in general (unless you convert them into maps or sets).  The reason is that efficient deltas to ordered collections are not easy to analyze or transform.  Also, most usecases for those are either better implemented with maps or sets or should not be implemented with commos.delta.  Note that you can always inject ordered sets or maps into a stream of commos deltas.
+
+- Implicit deltas at your option
+
+  Deltas can assert dissociation (a la dissoc) and up to full value replacement.  This is a useful feature to save local memory or bandwith.  At your option, commos.delta does the necessary extra diffing to re-create the implicit deltas for analysis.
+  
+
+commos.delta is compatible with Clojure (v. 1.7.0-RC2) and ClojureScript (v. 0.0-3308).
 
 ## Usage
-The `add` function is used to apply a delta to any supported value. Supported values are maps, sets, and all elements that are not collections.
 
-```clojure
-(add nil [:is 42])
-;; -> 42
-```
-
-While `:is` deltas are mostly useful for communicating an initial value, `:in` deltas can be used to add one or more values to a set:
-
-```clojure
-(add nil [:in 42])
-;; -> #{42}
-
-(add nil [:in [42 43]])
-;; -> #{43 42}
-```
-
-Finally, there are `:ex` deltas:
-
-```clojure
-(add #{42 43} [:ex 43])
-;; -> #{42}
-```
-All deltas support associative nesting:
-```clojure
-(add nil [:in :foo 42])
-;; -> {:foo #{42}}
-```
-Key sequences are possible, too
-```clojure
-(add nil [:in [:foo :bar] 42])
-;; -> {:foo {:bar #{42}}}
-```
-
-`:ex` deltas can be used for dissociation:
-```clojure
-(add {:foo {:bar #{42}}} [:ex [:foo] :bar])
-;; -> {:foo {}}
-```
-
-Accompanying `add`, the library provides utility functions and transducers. Please refer to docstrings in the `commos.delta` namespace. 
-
-## Sequential colls
-
-Sequential colls (lists, vectors) are not supported for manipulation via `:in` and `:ex`. Clojure implementation details could maybe be abused to achieve that, which is unsupported. If you have a usecase, please raise an issue.
 
 ## Testing
 
