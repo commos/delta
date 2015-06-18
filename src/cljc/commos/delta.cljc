@@ -209,10 +209,15 @@
   [val op new-val]
   (case op
     :is new-val
-    :in (into (or val #{}) new-val)
+    :in (do (assert (some #(% val) [nil? set? vector? list?])
+                    ":in applies to nil, sets, vectors or lists")
+            (into (or val #{}) new-val))
     :ex (if (map? val)
           (apply dissoc val new-val)
-          (set/difference val new-val))))
+          (do
+            (assert (set? val)
+                    ":ex applies to maps or sets")
+            (set/difference val new-val)))))
 
 (defn- update-in'
   "Like update-in but auto dissocs the val at ks if it is an empty set
