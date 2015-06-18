@@ -31,7 +31,7 @@ All three raw delta types follow this structure
 [op ks diff]
 ```
 
-Meaing: Perform `op` with `diff` at target, found in `ks`.
+Meaning: Perform `op` with `diff` at target, found in `ks`.
 
 | `op`  | Description           | Target type                 | `diff`    | Example           |
 |:------|:----------------------|:----------------------------|:----------|:------------------|
@@ -49,7 +49,7 @@ It may not be nested.
 
 ## Short form and pseudo deltas
 
-The `create` function and `raw-form` transducer make it convenient to create deltas both literally and programmatically. The following short-form is supported with it:
+The `create` function and `raw-form` transducer make it more convenient to create deltas both literally and programmatically. The following short-form is supported with it:
 
 ```clojure
 [op ks? v]
