@@ -73,14 +73,14 @@
     (cond (and (map? a)
                (map? b))
           (reduce
-           (fn [acc k]
-             (let [in-a (get a k :sentinel)
-                   in-b (get b k :sentinel)]
+           (fn this-fn [acc k]
+             (let [in-a (get a k this-fn)
+                   in-b (get b k this-fn)]
                (cond
-                 (kw-identical? in-a :sentinel)
+                 (identical? in-a this-fn)
                  (assoc-in acc [1 k] in-b)
 
-                 (kw-identical? in-b :sentinel)
+                 (identical? in-b this-fn)
                  (assoc-in acc [0 k] in-a)
 
                  (not= in-a in-b)
