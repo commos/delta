@@ -34,6 +34,7 @@ All three raw delta types follow this structure
 Meaing: Perform `op` with `diff` at target, found in `ks`.
 
 | `op`  | Description           | Target type                 | `diff`    | Example           |
+|:------|:----------------------|:----------------------------|:----------|:------------------|
 | `:is` | Replace               | -                           | any value | `[:is [:foo] 42]` |
 | `:in` | Put into              | Set or vector (default set) | seqable   | `[:in :foo [42]]` |
 | `:ex` | Disjoin or dissociate | Set or map                  | seqable   | `[:ex :foo [42]]` |
