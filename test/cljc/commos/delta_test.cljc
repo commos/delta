@@ -1,7 +1,7 @@
 (ns commos.delta-test
   (:require #?(:clj [clojure.test :refer [deftest is testing]]
                :cljs [cljs.test :refer-macros [deftest is testing]])
-            [commos.delta :refer [add nest values create]]))
+            [commos.delta :refer [add nest create]]))
 
 (deftest test-add
   (testing ":is"
