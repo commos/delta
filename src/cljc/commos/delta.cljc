@@ -28,7 +28,7 @@
   (update delta 1 (partial into ks)))
 
 (defn prepend-ks
-  "Prepend ks to the keys in delta."
+  "Prepend ks to the keys in delta.  Unpacks and packs :batch delta."
   [ks delta]
   (->> delta
        unpack
@@ -212,12 +212,11 @@
     :in (do (assert (some #(% val) [nil? set? vector? list?])
                     ":in applies to nil, sets, vectors or lists")
             (into (or val #{}) new-val))
-    :ex (if (map? val)
-          (apply dissoc val new-val)
-          (do
-            (assert (set? val)
-                    ":ex applies to maps or sets")
-            (set/difference val new-val)))))
+    :ex (do (assert (some #(% val) [nil? map? set?])
+                    ":ex applies to nil, maps or sets")
+            (if (set? val)
+              (set/difference val new-val)
+              (apply dissoc val new-val)))))
 
 (defn- update-in'
   "Like update-in but auto dissocs the val at ks if it is an empty set
