@@ -18,7 +18,7 @@ The commos.delta format is designed for streaming EDN data from one service to a
 
 - Implicit deltas at your option
 
-  Deltas can assert dissociation (a la dissoc) and up to full value replacement.  This is a useful feature to save local memory or bandwith but leaves listener services with less information.  At your option, commos.delta does the necessary extra diffing to restore implicit deltas on the receiving end.
+  Deltas can assert dissociation (a la dissoc) and up to full value replacement.  This is a useful feature to save local memory or bandwith but leaves listener services with less information.  At your option, commos.delta does the necessary extra diffing to restore implicit deltas on a receiving end.
   
 
 commos.delta is compatible with Clojure (v. `1.7.0-RC2`) and ClojureScript (v. `0.0-3308`).
@@ -57,7 +57,7 @@ The `create` function and `raw-form` transducer make it more convenient to creat
 
 Where an empty vector is inserted in the middle and `v` is wrapped in a vector if op requires it and it isn't one already.
 
-It also supports the `:on` and `:off` pseudo deltas which can be thought of as a deep merge for nested maps and sets.
+It also supports the `:on` and `:off` pseudo deltas which can be thought of as deep merge and unmerge for nested maps and sets.
 
 ```clojure
 [(:on | :off) ks? m]
