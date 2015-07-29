@@ -128,7 +128,7 @@
   (let [cur-v (get-in val ks)]
     (case op
       :is
-      (->> (difference cur-v (first v))
+      (->> (difference cur-v v)
            (map (partial prepend-ks-raw ks)))
       :ex
       (if (map? cur-v)
