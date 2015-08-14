@@ -1,4 +1,4 @@
-(defproject org.commos/delta "0.3.0"
+(defproject org.commos/delta "0.3.1"
   :description "Communicate changes of compound values"
   :url "http://github.com/commos/delta"
   :license {:name "Eclipse Public License"
@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.7.0-RC2"]
                  [org.commos/shared "0.1.0"]]
   :source-paths ["src/cljc"]
-  :profiles {:dev {:dependencies [[org.clojure/clojurescript "0.0-3308"]]
+  :profiles {:dev {:dependencies [[org.clojure/clojurescript "1.7.28"]]
                    :plugins [[lein-cljsbuild "1.0.6"]]
                    :test-paths ["test/cljc"]
                    :cljsbuild
