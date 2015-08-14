@@ -1,6 +1,6 @@
 # commos.delta
 
-`[org.commos/delta "0.3.0"]` provides opinionated facilities for creating, analyzing and applying directed deltas to nested EDN data structures.
+`[org.commos/delta "0.3.1"]` provides opinionated facilities for creating, analyzing and applying directed deltas to nested EDN data structures.
 
 The commos.delta format is designed for streaming EDN data from one service to another, leveraging EDN conveyance libraries like transit or fressian.  Further design goals were:
 
